@@ -59,33 +59,48 @@ def normalize_height(img, target_height=64):
     new_w = int(w * scale)
     return cv2.resize(img, (new_w, target_height))
 
-def extract_line_positions(binary, threshold=10):
+def extract_line_positions(binary, threshold_ratio=0.2):
     projection = horizontal_projection(binary)
 
+    max_val = np.max(projection)
+    threshold = max_val * threshold_ratio
+
     lines = []
-    start = None
+    in_line = False
+    start = 0
 
     for i, value in enumerate(projection):
 
-        if value > threshold and start is None:
+        if value > threshold and not in_line:
+            in_line = True
             start = i
 
-        elif value <= threshold and start is not None:
+        elif value <= threshold and in_line:
             end = i
-            lines.append((start, end))
-            start = None
+            if end - start > 5:  # remove noise lines
+                lines.append((start, end))
+            in_line = False
+
+    # handle last line
+    if in_line:
+        lines.append((start, len(projection)-1))
 
     return lines
-
-def crop_lines(binary, lines):
+    
+def crop_lines(binary, lines, padding_top=10, padding_bottom=10):
     line_images = []
 
+    h = binary.shape[0]
+
     for (start, end) in lines:
+
+        start = max(0, start - padding_top)
+        end = min(h, end + padding_bottom)
+
         line_img = binary[start:end, :]
         line_images.append(line_img)
 
     return line_images
-
 
 def save_lines(lines, output_folder):
     import os
