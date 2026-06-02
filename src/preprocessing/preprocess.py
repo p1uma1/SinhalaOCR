@@ -86,7 +86,6 @@ def extract_line_positions(binary, threshold_ratio=0.2):
         lines.append((start, len(projection)-1))
 
     return lines
-    
 def crop_lines(binary, lines, padding_top=10, padding_bottom=10):
     line_images = []
 
