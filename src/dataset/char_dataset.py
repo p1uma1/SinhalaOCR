@@ -26,19 +26,28 @@ class CharDataset(torch.utils.data.Dataset):
         
         return pixel_values, label
 
-def get_char_datasets(data_dir, batch_size=32, num_workers=4):
+def get_char_datasets(data_dir, batch_size=32, num_workers=None, pin_memory=True):
+    from src.utils.device import dataloader_kwargs
+
+    loader_kwargs = dataloader_kwargs(num_workers=num_workers, pin_memory=pin_memory)
     train_dataset = CharDataset(data_dir, split="train")
     valid_dataset = CharDataset(data_dir, split="valid")
     
     # Try to load test dataset if it exists, otherwise return None
     try:
         test_dataset = CharDataset(data_dir, split="test")
-        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+        test_loader = DataLoader(
+            test_dataset, batch_size=batch_size, shuffle=False, **loader_kwargs
+        )
     except FileNotFoundError:
         test_loader = None
-        
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
-    valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+
+    train_loader = DataLoader(
+        train_dataset, batch_size=batch_size, shuffle=True, **loader_kwargs
+    )
+    valid_loader = DataLoader(
+        valid_dataset, batch_size=batch_size, shuffle=False, **loader_kwargs
+    )
     
     classes = train_dataset.classes
     return train_loader, valid_loader, test_loader, classes

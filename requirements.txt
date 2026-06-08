@@ -9,3 +9,8 @@ matplotlib
 pandas
 scikit-learn
 jiwer
+tqdm
+accelerate
+fastapi
+uvicorn[standard]
+python-multipart

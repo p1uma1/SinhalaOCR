@@ -130,5 +130,7 @@ def process_document(image_path, output_folder):
     save_lines(line_images, output_folder)
 
     print(f"{len(line_images)} lines extracted")
-    
-process_document(image_path, output_folder)
+
+
+if __name__ == "__main__":
+    process_document(image_path, output_folder)
