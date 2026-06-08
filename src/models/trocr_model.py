@@ -3,7 +3,7 @@ import torch.nn as nn
 from transformers import VisionEncoderDecoderModel, AutoTokenizer
 
 class SinhalaTrOCR(nn.Module):
-    def __init__(self, encoder_pretrained_path=None, decoder_model_name='nlp-rilab/sinbert-base'):
+    def __init__(self, encoder_pretrained_path=None, decoder_model_name='keshan/SinhalaBERTo'):
         super().__init__()
         
         # Initialize the VisionEncoderDecoderModel
@@ -11,7 +11,7 @@ class SinhalaTrOCR(nn.Module):
         # so it can act as a decoder.
         print("Initializing VisionEncoderDecoderModel...")
         self.model = VisionEncoderDecoderModel.from_encoder_decoder_pretrained(
-            "microsoft/trocr-base-stage1", 
+            "google/vit-base-patch16-384", 
             decoder_model_name
         )
         

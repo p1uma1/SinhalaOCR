@@ -32,8 +32,8 @@ def compute_metrics(predictions, labels, tokenizer):
     return wer_score, cer_score
 
 def train_stage2():
-    data_dir = 'src/dataset/SinhalaOCR/images'
-    json_file = 'src/dataset/SinhalaOCR/labels.json'
+    data_dir = 'Datasets/SinOCR-handwritten/handwritten-data/train/images'
+    csv_file = 'Datasets/SinOCR-handwritten/handwritten-data/train/data.csv'
     batch_size = 4
     num_epochs = 20
     learning_rate = 5e-5
@@ -44,7 +44,7 @@ def train_stage2():
     print("Loading dataset...")
     # Assuming we use the same dataloader for simplicity here. 
     # In practice, you'd split this into train/val loaders.
-    train_loader = get_line_dataloader(data_dir, json_file, batch_size=batch_size)
+    train_loader = get_line_dataloader(data_dir, csv_file, batch_size=batch_size)
     
     print("Initializing Stage 2 Model...")
     encoder_path = 'outputs/stage1/pretrained_encoder.pth'
@@ -53,7 +53,7 @@ def train_stage2():
         encoder_path = None
         
     model = SinhalaTrOCR(encoder_pretrained_path=encoder_path).to(device)
-    tokenizer = AutoTokenizer.from_pretrained('nlp-rilab/sinbert-base')
+    tokenizer = AutoTokenizer.from_pretrained('keshan/SinhalaBERTo')
     
     optimizer = optim.AdamW(model.parameters(), lr=learning_rate)
     

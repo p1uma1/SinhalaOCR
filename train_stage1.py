@@ -8,9 +8,9 @@ from src.models.vision_encoder import DeiTClassifier
 
 def train_stage1():
     # Configuration
-    data_dir = 'src/dataset/Dataset454'
-    batch_size = 32
-    num_epochs = 10
+    data_dir = 'Datasets/Dataset454'
+    batch_size = 16
+    num_epochs = 1
     learning_rate = 1e-4
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"Using device: {device}")
@@ -31,6 +31,7 @@ def train_stage1():
     # Loss and Optimizer
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.AdamW(model.parameters(), lr=learning_rate)
+    scaler = torch.amp.GradScaler('cuda')
 
     best_val_loss = float('inf')
     os.makedirs('outputs/stage1', exist_ok=True)
@@ -47,10 +48,13 @@ def train_stage1():
             images, labels = images.to(device), labels.to(device)
 
             optimizer.zero_grad()
-            outputs = model(images)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
+            with torch.amp.autocast('cuda'):
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+            
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
 
             running_loss += loss.item()
             _, predicted = torch.max(outputs.data, 1)
@@ -68,8 +72,9 @@ def train_stage1():
         with torch.no_grad():
             for images, labels in tqdm(valid_loader, desc="Validation"):
                 images, labels = images.to(device), labels.to(device)
-                outputs = model(images)
-                loss = criterion(outputs, labels)
+                with torch.amp.autocast('cuda'):
+                    outputs = model(images)
+                    loss = criterion(outputs, labels)
                 
                 val_loss += loss.item()
                 _, predicted = torch.max(outputs.data, 1)

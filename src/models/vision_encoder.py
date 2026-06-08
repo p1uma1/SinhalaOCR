@@ -6,7 +6,7 @@ from transformers.models.vit.modeling_vit import ViTModel as HFViTModel
 # The microsoft/trocr-base-stage1 uses ViT for its encoder.
 
 class DeiTClassifier(nn.Module):
-    def __init__(self, num_classes=454, model_name='microsoft/trocr-base-stage1'):
+    def __init__(self, num_classes=454, model_name='google/vit-base-patch16-384'):
         super().__init__()
         
         # Load the encoder part of TrOCR
@@ -14,13 +14,9 @@ class DeiTClassifier(nn.Module):
         # However, TrOCR combines VisionEncoderDecoderModel. 
         # To get just the vision encoder, we can use ViTModel and point to the trocr checkpoint.
         # But wait, trocr weights are saved as encoder.xx. 
-        # A simpler way is to load the full TrOCR model and extract the encoder.
-        from transformers import VisionEncoderDecoderModel
+        # Use standard ViTModel
         print(f"Loading encoder from {model_name}...")
-        trocr = VisionEncoderDecoderModel.from_pretrained(model_name)
-        
-        # The encoder is a ViTModel
-        self.encoder = trocr.encoder
+        self.encoder = ViTModel.from_pretrained(model_name)
         
         # Determine the hidden size
         hidden_size = self.encoder.config.hidden_size
